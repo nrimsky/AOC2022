@@ -40,12 +40,22 @@ def find_start_end(parsed):
                 end = (row_idx, col_idx)
     return start, end
 
-def ans(inp):
-    parsed = [[a for a in s] for s in inp.split("\n")]
+def find_all_starts_end(parsed):
+    starts = []
+    end = (0, 0)
+    for row_idx, row in enumerate(parsed):
+        for col_idx, item in enumerate(row):
+            if item == 'a' or item == 'S':
+                starts.append((row_idx, col_idx))
+            elif item == 'E':
+                end = (row_idx, col_idx)
+    return starts, end
+
+def _ans(parsed, start, end):
     elevations = [[get_elevation(l) for l in s] for s in parsed]
-    start, end = find_start_end(parsed)
     visited = set()
     to_visit = deque([(start, 0)])
+    curr, dist = 0, 0
     while len(to_visit) > 0:
         curr, dist = to_visit.pop()
         if curr in visited:
@@ -57,10 +67,30 @@ def ans(inp):
         for place in valid_next:
             if place not in visited:
                 to_visit.appendleft((place, dist + 1))
-    return dist
+    return -1
+
+def ans(inp):
+    parsed = [[a for a in s] for s in inp.split("\n")]
+    start, end = find_start_end(parsed)
+    return _ans(parsed, start, end)
+
+def ans2(inp):
+    parsed = [[a for a in s] for s in inp.split("\n")]
+    starts, end = find_all_starts_end(parsed)
+    best = 100000
+    for s in starts:
+        d = _ans(parsed, s, end)
+        if d < best and d > 0:
+            best = d 
+    return best
+
 
 if __name__ == "__main__":
     with open("inputs/testinp12.txt") as tstfile:
         print(ans(tstfile.read()))
     with open("inputs/inp12.txt") as textfile:
         print(ans(textfile.read()))
+    with open("inputs/testinp12.txt") as tstfile:
+        print(ans2(tstfile.read()))
+    with open("inputs/inp12.txt") as textfile:
+        print(ans2(textfile.read()))
