@@ -1,3 +1,5 @@
+from functools import cmp_to_key
+
 def ordered(p1, p2):
     if type(p1) is int and type(p2) is int:
         if p1 < p2:
@@ -31,8 +33,22 @@ def ans(inp):
             tot += (i + 1)
     return tot
 
+def ans2(inp):
+    parsed = [eval(l) for l in inp.split("\n") if len(l) != 0]
+    parsed += [[[2]],[[6]]]
+    s = sorted(parsed, key = cmp_to_key(ordered))[::-1]
+    tot = 1
+    for i, p in enumerate(s):
+        if p == [[2]] or p == [[6]]:
+            tot *= (i + 1)
+    return tot
+
 if __name__ == "__main__":
     with open("inputs/testinp13.txt") as txtfile:
         print(ans(txtfile.read()))
     with open("inputs/inp13.txt") as txtfile:
         print(ans(txtfile.read()))
+    with open("inputs/testinp13.txt") as txtfile:
+        print(ans2(txtfile.read()))
+    with open("inputs/inp13.txt") as txtfile:
+        print(ans2(txtfile.read()))
