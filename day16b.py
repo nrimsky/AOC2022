@@ -36,12 +36,28 @@ def get_max_pressure(start, graph, flow_rates, best_init=0):
             continue
 
 
-        left_to_open = (max_open - len(opened)) // 2
-        if left_to_open <= 2:
-            left_to_open = 0
-        if released + max_rate * (26 - time - left_to_open) <= best:
+        # Pruning
+        if released + (26 - time - 1) * max_rate + rate <= best:
             continue
 
+        # MOAR Pruning
+        # Calculate best case max pressure released for this branch
+        _re = released 
+        _ra = rate
+        _t = time 
+        _to_open = sorted([flow_rates[o] for o in flow_rates.keys() if o not in opened and flow_rates[o] > 0])[::-1]
+        for i in range(0, len(_to_open), 2):
+            if _t >= 26:
+                break 
+            _ra += _to_open[i]
+            if i + 1 < len(_to_open):
+                _ra += _to_open[i + 1]
+            _t += 2
+            _re += 2 * _ra
+        _re += max([26 - _t, 0]) * _ra
+            
+        if _re < best:
+            continue
 
         fl_human = flow_rates[valve_human]
         fl_elephant = flow_rates[valve_elephant]
@@ -53,17 +69,17 @@ def get_max_pressure(start, graph, flow_rates, best_init=0):
             done.add((valve_human, valve_elephant))
             done.add((valve_elephant, valve_human))
             to_visit.append((valve_human, valve_elephant, time+1, rate+fl_elephant+fl_human, released+rate, opened.union(set([valve_human, valve_elephant]))))
-        for nxt_human in graph[valve_human]:
-            # human go to next, elephant open
-            if ((nxt_human, valve_elephant) not in done) and ((valve_elephant, nxt_human) not in done):
-                if open_elephant:
+        if open_elephant:
+            for nxt_human in graph[valve_human]:
+                # human go to next, elephant open
+                if ((nxt_human, valve_elephant) not in done) and ((valve_elephant, nxt_human) not in done):
                     done.add((nxt_human, valve_elephant))
                     done.add((valve_elephant, nxt_human))
                     to_visit.append((nxt_human, valve_elephant, time+1, rate+fl_elephant, released+rate, opened.union(set([valve_elephant]))))
-        for nxt_elephant in graph[valve_elephant]:
-            # human open, elephant go to next
-            if ((valve_human, nxt_elephant) not in done) and ((nxt_elephant, valve_human) not in done):
-                if open_human:
+        if open_human:
+            for nxt_elephant in graph[valve_elephant]:
+                # human open, elephant go to next
+                if ((valve_human, nxt_elephant) not in done) and ((nxt_elephant, valve_human) not in done):
                     done.add((valve_human, nxt_elephant))
                     done.add((nxt_elephant, valve_human))
                     to_visit.append((valve_human, nxt_elephant, time+1, rate+fl_human, released+rate, opened.union(set([valve_human]))))
@@ -81,10 +97,7 @@ def ans(inp, best_init=0):
     print(get_max_pressure('AA', graph, flow_rates, best_init=best_init))
 
 if __name__ == "__main__":
-    with open("inputs/testinp16.txt") as txtfile:
+    # with open("inputs/testinp16.txt") as txtfile:
+    #     ans(txtfile.read()) 
+    with open("inputs/inp16.txt") as txtfile:
         ans(txtfile.read())
-    # with open("inputs/inp16.txt") as txtfile:
-    #     ans(txtfile.read(), best_init=1923)
-
-    # 15 max open -> ~30 mins to open all 
-    # If after 15 minutes not all open, break path
