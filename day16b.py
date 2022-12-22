@@ -49,11 +49,11 @@ def get_max_pressure(start, graph, flow_rates, best_init=0):
         for i in range(0, len(_to_open), 2):
             if _t >= 26:
                 break 
+            _re += 2 * _ra
             _ra += _to_open[i]
             if i + 1 < len(_to_open):
                 _ra += _to_open[i + 1]
             _t += 2
-            _re += 2 * _ra
         _re += max([26 - _t, 0]) * _ra
             
         if _re < best:
